@@ -1,12 +1,8 @@
 #include "shell.h"
-
-
 /**
- * main - a function that Write a UNIX command line interpreter
- *
+ * main - a function that Write a UNIX command line interpreter *
  * Return: Always 0
  */
-
 int main(void)
 {
 	size_t buffsize = 0;
@@ -16,7 +12,7 @@ int main(void)
 	char **array;
 	pid_t child_pid;
 	int status;
-
+	char *cmdPath;
 
 	while (1)
 	{
@@ -24,7 +20,6 @@ int main(void)
 		getline(&buff, &buffsize, stdin);
 		token = strtok(buff, " \t\n");
 		array = malloc(sizeof(char *) * 1024);
-
 		while (token)
 		{
 			array[i] = token;
@@ -32,21 +27,30 @@ int main(void)
 			i++;
 		}
 		array[i] = NULL;
+		i = 0;
 		child_pid = fork();
 		if (child_pid == -1)
 		{
 			perror("Error:");
-			return (1);
+			return (-1);
 		}
 		if (child_pid == 0)
-		{
-			if (execve(array[0], array, NULL) == -1)
-				perror("Error:");
+			{
+				cmdPath = get_path(array[0]);
+		if (cmdPath != NULL)
+			{
+				execve(cmdPath, array, environ);
+	if (execve(cmdPath, array, environ) == -1)
+	perror("Error: Execve failed");
+	free(buff);
+	exit(1);
 		}
 		else
 			wait(&status);
+		i++;
 		i = 0;
 		free(array);
 	}
 	return (0);
+	}
 }
